@@ -11,6 +11,7 @@ import axios from "axios";
 import { toast } from "react-toastify";
 import { toastOptions } from "@/lib/lib";
 import "react-toastify/dist/ReactToastify.css";
+import SearchBox from "@/components/SearchBox";
 
 export async function getServerSideProps({ req }) {
   const session = await getSession({ req });
@@ -44,6 +45,18 @@ export async function getServerSideProps({ req }) {
 
 const feed = ({ user, posts }) => {
   const router = useRouter();
+  const [author, setAuthor] = useState("");
+  const [title, setTitle] = useState("");
+
+  const filteredReviews = posts.filter((review) => {
+    const titleMatch = review.title.toLowerCase().includes(title.toLowerCase());
+
+    const authorMatch = review.author
+      .toLowerCase()
+      .includes(author.toLowerCase());
+
+    return authorMatch && titleMatch;
+  });
 
   const refreshData = () => {
     router.replace(router.asPath);
@@ -132,8 +145,26 @@ const feed = ({ user, posts }) => {
                 </form>
               </div>
             </div>
+
+            <div className="flex gap-2 p-2 w-full justify-evenly">
+              <input
+                type="text"
+                placeholder="Enter Author Here"
+                className="w-64 rounded-sm dark:text-white bg-gray-100 dark:bg-darkMode-component flex flex-grow p-4 focus:outline-none"
+                value={author}
+                onChange={(e) => setAuthor(e.target.value)}
+              />
+              <input
+                type="text"
+                className="w-64 rounded-sm dark:text-white bg-gray-100 dark:bg-darkMode-component flex flex-grow p-4 focus:outline-none"
+                value={title}
+                placeholder="Enter Title Here"
+                onChange={(e) => setTitle(e.target.value)}
+              />
+            </div>
+
             <div id="Post" className="mb-10">
-              {posts.map((post) => {
+              {filteredReviews.map((post) => {
                 return <Post post={post} user={user} key={post._id} />;
               })}
             </div>
