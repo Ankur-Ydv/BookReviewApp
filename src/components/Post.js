@@ -17,11 +17,17 @@ const Post = ({ post, user }) => {
             </div>
           </div>
         </div>
-        <div className="flex gap-4 m-4">
-          <div>Title : {post.title}</div>
-          <div>Author : {post.author}</div>
+        <div className="flex gap-4 m-4 ">
+          <div className="font-bold text-xl">
+            Title : <span className="font-normal text-md">{post.title}</span>
+          </div>
+          <div className="font-bold text-xl">
+            Author : <span className="font-normal text-md">{post.author}</span>
+          </div>
         </div>
-        <p className="ml-4">{post.description}</p>
+        <p className="ml-3 text-md p-4 bg-darkMode-background rounded-md">
+          {post.description}
+        </p>
       </div>
     </div>
   );
