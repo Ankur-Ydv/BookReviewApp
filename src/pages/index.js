@@ -1,118 +1,147 @@
-import Image from 'next/image'
-import { Inter } from 'next/font/google'
+import dbConnect from "@/dbConnect";
+import MainLayout from "@/layouts/MainLayout";
+import Reviews from "@/models/reviewModel";
+import Users from "@/models/userModel";
+import { getSession } from "next-auth/react";
+import React, { useState } from "react";
+import Post from "@/components/Post";
+import { useRouter } from "next/router";
+import { useFormik } from "formik";
+import axios from "axios";
+import { toast } from "react-toastify";
+import { toastOptions } from "@/lib/lib";
+import "react-toastify/dist/ReactToastify.css";
 
-const inter = Inter({ subsets: ['latin'] })
+export async function getServerSideProps({ req }) {
+  const session = await getSession({ req });
 
-export default function Home() {
+  if (!session?.user) {
+    return {
+      redirect: {
+        destination: "/login",
+        permanent: false,
+      },
+    };
+  }
+
+  dbConnect().catch((error) => console.log(error));
+
+  //current user
+  let res = await Users.findById(session.user.id);
+  const user = JSON.parse(JSON.stringify(res));
+
+  //all posts by current user
+  res = await Reviews.find().sort({ updatedAt: -1 });
+  const posts = res.map((doc) => {
+    const post = JSON.parse(JSON.stringify(doc));
+    return post;
+  });
+
+  return {
+    props: { user, posts },
+  };
+}
+
+const feed = ({ user, posts }) => {
+  const router = useRouter();
+
+  const refreshData = () => {
+    router.replace(router.asPath);
+  };
+
+  const onSubmit = async (values, error) => {
+    const { description, author, title } = values;
+    const res = await axios.post("/api/review", {
+      userId: user._id,
+      description,
+      author,
+      title,
+    });
+
+    if (res.status === 200) {
+      toast.success(res.data.msg, toastOptions);
+      setTimeout(refreshData);
+    } else {
+      toast.error(res.data.msg, toastOptions);
+    }
+  };
+
+  const formik = useFormik({
+    initialValues: {
+      description: "",
+      author: "",
+      title: "",
+    },
+    onSubmit,
+  });
+
   return (
-    <main
-      className={`flex min-h-screen flex-col items-center justify-between p-24 ${inter.className}`}
-    >
-      <div className="z-10 w-full max-w-5xl items-center justify-between font-mono text-sm lg:flex">
-        <p className="fixed left-0 top-0 flex w-full justify-center border-b border-gray-300 bg-gradient-to-b from-zinc-200 pb-6 pt-8 backdrop-blur-2xl dark:border-neutral-800 dark:bg-zinc-800/30 dark:from-inherit lg:static lg:w-auto lg:rounded-xl lg:border lg:bg-gray-200 lg:p-4 lg:dark:bg-zinc-800/30">
-          Get started by editing&nbsp;
-          <code className="font-mono font-bold">src/pages/index.js</code>
-        </p>
-        <div className="fixed bottom-0 left-0 flex h-48 w-full items-end justify-center bg-gradient-to-t from-white via-white dark:from-black dark:via-black lg:static lg:h-auto lg:w-auto lg:bg-none">
-          <a
-            className="pointer-events-none flex place-items-center gap-2 p-8 lg:pointer-events-auto lg:p-0"
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{' '}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className="dark:invert"
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
+    <MainLayout>
+      <div className="bg-lightMode-background justify-center flex dark:bg-darkMode-background overflow-y-scroll scrollbar-hide w-full h-full">
+        <div className=" max-w-3xl w-full flex flex-col gap-5 p-5 pt-7">
+          <div className="text-sm">
+            <div
+              id="inputBox"
+              className="bg-lightMode-component mb-4 dark:bg-darkMode-component dark:text-darkMode-txt p-2 rounded-lg shadow-md text-lightMode-txt font-medium content-center items-center"
+            >
+              <div className=" flex  space-x-4 p-2 px-4 ">
+                <img
+                  className="rounded-full w-10 h-10 mt-1 top-0"
+                  src="https://png.pngtree.com/png-vector/20190710/ourmid/pngtree-user-vector-avatar-png-image_1541962.jpg"
+                  alt=""
+                />
+                <form
+                  action=""
+                  className="flex flex-1 flex-col"
+                  onSubmit={formik.handleSubmit}
+                >
+                  <div className="w-full flex gap-3 py-3 flex-wrap justify-evenly">
+                    <input
+                      type="title"
+                      name="title"
+                      id="title"
+                      className="w-64 rounded-xl bg-gray-100 dark:bg-neutral-800 flex flex-grow p-4 focus:outline-none"
+                      placeholder="Enter Book's Title"
+                      required=""
+                      {...formik.getFieldProps("title")}
+                    />
+                    <input
+                      type="author"
+                      name="author"
+                      id="author"
+                      className="w-64 rounded-xl bg-gray-100 dark:bg-neutral-800 flex flex-grow p-4 focus:outline-none"
+                      placeholder="Enter Author's Name"
+                      required=""
+                      {...formik.getFieldProps("author")}
+                    />
+                  </div>
+                  <textarea
+                    rows="5"
+                    className="rounded-xl bg-gray-100 dark:bg-neutral-800 flex flex-grow p-4 focus:outline-none "
+                    placeholder="What's on your Mind about the Book?"
+                    {...formik.getFieldProps("description")}
+                  />
+                  <div className="flex border-t-[1px] mt-2 pt-2 justify-center border-neutral-300 dark:border-neutral-500 gap-2">
+                    <button
+                      type="submit"
+                      className="rounded-md w-1/3 text-center text-black dark:text-white p-2 bg-darkMode-btn"
+                    >
+                      Submit
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+            <div id="Post" className="mb-10">
+              {posts.map((post) => {
+                return <Post post={post} user={user} key={post._id} />;
+              })}
+            </div>
+          </div>
         </div>
       </div>
+    </MainLayout>
+  );
+};
 
-      <div className="relative flex place-items-center before:absolute before:h-[300px] before:w-[480px] before:-translate-x-1/2 before:rounded-full before:bg-gradient-radial before:from-white before:to-transparent before:blur-2xl before:content-[''] after:absolute after:-z-20 after:h-[180px] after:w-[240px] after:translate-x-1/3 after:bg-gradient-conic after:from-sky-200 after:via-blue-200 after:blur-2xl after:content-[''] before:dark:bg-gradient-to-br before:dark:from-transparent before:dark:to-blue-700/10 after:dark:from-sky-900 after:dark:via-[#0141ff]/40 before:lg:h-[360px]">
-        <Image
-          className="relative dark:drop-shadow-[0_0_0.3rem_#ffffff70] dark:invert"
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
-
-      <div className="mb-32 grid text-center lg:mb-0 lg:grid-cols-4 lg:text-left">
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Docs{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Find in-depth information about Next.js features and API.
-          </p>
-        </a>
-
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Learn{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Learn about Next.js in an interactive course with&nbsp;quizzes!
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Templates{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Discover and deploy boilerplate example Next.js&nbsp;projects.
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Deploy{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
-    </main>
-  )
-}
+export default feed;
