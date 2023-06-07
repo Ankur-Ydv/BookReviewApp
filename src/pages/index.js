@@ -76,6 +76,8 @@ const feed = ({ user, posts }) => {
     } else {
       toast.error(res.data.msg, toastOptions);
     }
+
+    formik.resetForm();
   };
 
   const formik = useFormik({
