@@ -13,7 +13,7 @@ const Post = ({ post, user }) => {
               />
             </div>
             <div className="ml-3">
-              <p className="font-medium">{user.fullname}</p>
+              <p className="font-medium">{post.userId.fullname}</p>
             </div>
           </div>
         </div>

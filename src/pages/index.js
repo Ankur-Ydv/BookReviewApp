@@ -31,7 +31,7 @@ export async function getServerSideProps({ req }) {
   const user = JSON.parse(JSON.stringify(res));
 
   //all posts by current user
-  res = await Reviews.find().sort({ updatedAt: -1 });
+  res = await Reviews.find().populate("userId").sort({ updatedAt: -1 });
   const posts = res.map((doc) => {
     const post = JSON.parse(JSON.stringify(doc));
     return post;
@@ -166,7 +166,7 @@ const feed = ({ user, posts }) => {
 
             <div id="Post" className="mb-10">
               {filteredReviews.map((post) => {
-                return <Post post={post} user={user} key={post._id} />;
+                return <Post post={post} key={post._id} />;
               })}
             </div>
           </div>
