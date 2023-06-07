@@ -11,7 +11,6 @@ import axios from "axios";
 import { toast } from "react-toastify";
 import { toastOptions } from "@/lib/lib";
 import "react-toastify/dist/ReactToastify.css";
-import SearchBox from "@/components/SearchBox";
 
 export async function getServerSideProps({ req }) {
   const session = await getSession({ req });
@@ -137,7 +136,7 @@ const feed = ({ user, posts }) => {
                   <div className="flex border-t-[1px] mt-2 pt-2 justify-center border-neutral-300 dark:border-neutral-500 gap-2">
                     <button
                       type="submit"
-                      className="rounded-md w-1/3 text-center text-black dark:text-white p-2 bg-darkMode-btn"
+                      className="rounded-md w-1/3 text-center text-black dark:text-white p-2 bg-lightMode-btn dark:bg-darkMode-btn"
                     >
                       Submit
                     </button>
@@ -146,19 +145,19 @@ const feed = ({ user, posts }) => {
               </div>
             </div>
 
-            <div className="flex gap-2 p-2 w-full justify-evenly">
+            <div className="flex gap-2 p-2 w-full justify- shadow-md">
               <input
                 type="text"
-                placeholder="Enter Author Here"
-                className="w-64 rounded-sm dark:text-white bg-gray-100 dark:bg-darkMode-component flex flex-grow p-4 focus:outline-none"
+                placeholder="Search Author Here"
+                className="w-64 rounded-sm dark:text-white bg-lightMode-component dark:bg-darkMode-component flex flex-grow p-4 focus:outline-none"
                 value={author}
                 onChange={(e) => setAuthor(e.target.value)}
               />
               <input
                 type="text"
-                className="w-64 rounded-sm dark:text-white bg-gray-100 dark:bg-darkMode-component flex flex-grow p-4 focus:outline-none"
+                className="w-64 rounded-sm dark:text-white bg-lightMode-component dark:bg-darkMode-component flex flex-grow p-4 focus:outline-none"
                 value={title}
-                placeholder="Enter Title Here"
+                placeholder="Search Title Here"
                 onChange={(e) => setTitle(e.target.value)}
               />
             </div>

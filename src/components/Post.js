@@ -25,7 +25,7 @@ const Post = ({ post, user }) => {
             Author : <span className="font-normal text-md">{post.author}</span>
           </div>
         </div>
-        <p className="ml-3 text-md p-4 bg-darkMode-background rounded-md">
+        <p className="ml-3 text-md p-4 bg-lightMode-background dark:bg-darkMode-background rounded-md">
           {post.description}
         </p>
       </div>
