@@ -1,3 +1,0 @@
-MONGO_URI=mongodb+srv://admin:admin@cluster0.0ql9t2t.mongodb.net/reviews?retryWrites=true&w=majority
-NEXTAUTH_URL=http://localhost:3000/
-NEXTAUTH_SECRET=5820e7e09bb1bdeec0dc5fefc5c1c508
