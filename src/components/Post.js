@@ -1,6 +1,6 @@
 import React from "react";
 
-const Post = ({ post, user }) => {
+const Post = ({ post }) => {
   return (
     <div className="flex flex-col">
       <div className="p-5 bg-lightMode-component dark:bg-darkMode-component mt-5 rounded-t-lg shadow-sm flex flex-col text-lightMode-txt dark:text-darkMode-txt">
